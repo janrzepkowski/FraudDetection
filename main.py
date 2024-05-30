@@ -1,7 +1,13 @@
 import pandas as pd
+import zipfile
+import os
 
 
 def main():
+    if not os.path.exists('Final Transactions.csv'):
+        with zipfile.ZipFile("dataset.zip", "r") as zip_ref:
+            zip_ref.extractall()
+
     df = pd.read_csv('Final Transactions.csv')
     print(df.shape)
     sample = df.sample(1000000)
