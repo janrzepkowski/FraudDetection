@@ -11,6 +11,8 @@ from keras.src.regularizers import L2
 from matplotlib import pyplot as plt
 
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+
 
 def main():
     if not os.path.exists('Final Transactions.csv'):
@@ -28,6 +30,7 @@ def main():
     model = Sequential([
         Dense(3, input_shape=(3,), use_bias=True, ),
         Dense(16, use_bias=True, activation="relu"),
+        Dense(8, use_bias=True, activation="relu"),
         Dense(1, use_bias=True, activation="sigmoid")
     ])
 
@@ -57,7 +60,20 @@ def main():
     plt.legend()
     plt.show()
 
+    seq_predictions = model.predict(x_test)
+    seq_predictions = np.transpose(seq_predictions)[0]  # transformation to get (n,)
+    # Applying transformation to get binary values predictions with 0.5 as thresold
+    seq_predictions = list(map(lambda x: 0 if x < 0.5 else 1, seq_predictions))
 
+    cm = confusion_matrix(y_test, seq_predictions)
+    cmd = ConfusionMatrixDisplay(cm, display_labels=['Real', 'Fraud'])
+    cmd.plot()
+    plt.show()
+
+    cm = confusion_matrix(y_test, seq_predictions, normalize='all')
+    cmd = ConfusionMatrixDisplay(cm, display_labels=['Real', 'Fraud'])
+    cmd.plot()
+    plt.show()
 
 if __name__ == '__main__':
     main()
