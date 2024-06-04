@@ -10,6 +10,7 @@ from keras.src.layers import Dense, Dropout
 from keras.src.regularizers import L2
 from matplotlib import pyplot as plt
 
+from sklearn.model_selection import train_test_split
 
 def main():
     if not os.path.exists('Final Transactions.csv'):
@@ -19,64 +20,43 @@ def main():
     orgDf = pd.read_csv('Final Transactions.csv')
     df = orgDf.sample(1000000)
 
-    data = df.get(['CUSTOMER_ID', 'TERMINAL_ID', 'TX_AMOUNT', 'TX_TIME_SECONDS', 'TX_TIME_DAYS'])
+    data = df.get(['CUSTOMER_ID', 'TERMINAL_ID', 'TX_AMOUNT'])
     labels = df.get('TX_FRAUD')
-    one_hot_labels = pd.get_dummies(labels)
 
-    data = np.asarray(data)
-    one_hot_labels = np.asarray(one_hot_labels)
+    x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.2)
 
-    model = Sequential()
-    model.add(Dense(units=32, use_bias=True, input_shape=(5,), activation="relu"))
-    model.add(Dropout(0.4))
-    model.add(Dense(units=16, use_bias=True, kernel_regularizer=L2(0.01), activation="relu"))
-    model.add(Dropout(0.4))
-    model.add(Dense(units=16, use_bias=True, kernel_regularizer=L2(0.01), activation="relu"))
-    model.add(Dropout(0.4))
-    model.add(Dense(units=5, use_bias=True, activation="relu"))
-    model.add(Dropout(0.4))
-    model.add(Dense(units=7, use_bias=True, activation="relu"))
-    model.add(Dropout(0.4))
-    model.add(Dense(units=10, use_bias=True, activation="relu"))
-    model.add(Dropout(0.4))
-    model.add(Dense(units=1, use_bias=True, activation="relu"))
-    model.add(Dropout(0.4))
-    model.add(Dense(units=2, use_bias=True, activation="softmax"))
-    opt = keras.optimizers.SGD(learning_rate=0.01)
+    model = Sequential([
+        Dense(3, input_shape=(3,), use_bias=True, ),
+        Dense(16, use_bias=True, activation="relu"),
+        Dense(1, use_bias=True, activation="sigmoid")
+    ])
 
-    model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
-    i = 0
+    model.compile(loss='binary_crossentropy', optimizer="adam", metrics=['accuracy'])
+
     model.summary()
 
     ep = 50
-    history = model.fit(data, one_hot_labels, batch_size=1000, epochs=ep, validation_split=0.3, shuffle=True)
+    history = model.fit(x=x_train, y=y_train, batch_size=1000, epochs=ep, validation_split=0.2)
 
-    i += ep
+    model.evaluate(x_test, y_test)
+
     acc = history.history['accuracy']
     loss = history.history['loss']
     epochs = range(1, len(acc) + 1)
-    plt.plot(epochs, acc, 'bo', label='Training acc')
+    plt.plot(epochs, acc, label='Training accuracy')
+    acc = history.history['val_accuracy']
+    plt.plot(epochs, acc, label='Validation accuracy')
     plt.title('Training accuracy')
     plt.legend()
+
     plt.figure()
-    plt.plot(epochs, loss, 'bo', label='Training loss')
+    plt.plot(epochs, loss, label='Training loss')
+    loss = history.history['val_loss']
+    plt.plot(epochs, loss, label='Validation accuracy')
     plt.title('Training loss')
     plt.legend()
     plt.show()
 
-    acc = history.history['val_accuracy']
-    loss = history.history['val_loss']
-    epochs = range(1, len(acc) + 1)
-    plt.plot(epochs, acc, 'bo', label='val acc')
-    plt.title('val accuracy')
-    plt.legend()
-    plt.figure()
-    plt.plot(epochs, loss, 'bo', label='val loss')
-    plt.title('val loss')
-    plt.legend()
-    plt.show()
-
-    print(i)
 
 
 if __name__ == '__main__':
