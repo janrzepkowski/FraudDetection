@@ -14,6 +14,18 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 
+def convert_year_seconds(time_in_seconds):
+    seconds_from_midnight = time_in_seconds % (24 * 60 * 60)
+    minutes_from_midnight = seconds_from_midnight / 60
+    return int(minutes_from_midnight)
+
+
+def get_week_day(datetime):
+    date, _ = datetime.split()
+    wd = pd.Timestamp(date)
+    return wd.dayofweek
+
+
 def main():
     if not os.path.exists('Final Transactions.csv'):
         with zipfile.ZipFile("dataset.zip", "r") as zip_ref:
@@ -23,12 +35,15 @@ def main():
     df = orgDf.sample(1000000)
 
     data = df.get(['CUSTOMER_ID', 'TERMINAL_ID', 'TX_AMOUNT'])
+    data['TX_TIME_MINUTES'] = df['TX_TIME_SECONDS'].apply(convert_year_seconds)
+
+    data['TX_WEEK_DAY'] = df['TX_DATETIME'].apply(get_week_day)
     labels = df.get('TX_FRAUD')
 
     x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.2)
 
     model = Sequential([
-        Dense(3, input_shape=(3,), use_bias=True, ),
+        Dense(data.shape[1], input_shape=(data.shape[1],), use_bias=True, ),
         Dense(16, use_bias=True, activation="relu"),
         Dense(8, use_bias=True, activation="relu"),
         Dense(1, use_bias=True, activation="sigmoid")
@@ -74,6 +89,7 @@ def main():
     cmd = ConfusionMatrixDisplay(cm, display_labels=['Real', 'Fraud'])
     cmd.plot()
     plt.show()
+
 
 if __name__ == '__main__':
     main()
