@@ -26,6 +26,12 @@ def get_week_day(datetime):
     return wd.dayofweek
 
 
+def get_month(datetime):
+    date, _ = datetime.split()
+    wd = pd.Timestamp(date)
+    return wd.month
+
+
 def main():
     if not os.path.exists('Final Transactions.csv'):
         with zipfile.ZipFile("dataset.zip", "r") as zip_ref:
@@ -36,6 +42,7 @@ def main():
 
     data = df.get(['CUSTOMER_ID', 'TERMINAL_ID', 'TX_AMOUNT'])
     data['TX_TIME_MINUTES'] = df['TX_TIME_SECONDS'].apply(convert_year_seconds)
+    data['TX_MONTH'] = df['TX_DATETIME'].apply(get_month)
 
     data['TX_WEEK_DAY'] = df['TX_DATETIME'].apply(get_week_day)
     labels = df.get('TX_FRAUD')
