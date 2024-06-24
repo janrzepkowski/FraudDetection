@@ -51,10 +51,21 @@ def main():
     data['TX_WEEK_DAY'] = df['TX_DATETIME'].apply(get_week_day)
     labels = df.get('TX_FRAUD')
 
-    smote = SMOTE(random_state=42)
-    X_resampled_smote, y_resampled_smote = smote.fit_resample(data, labels)
+    print("1. Over-sampling")
+    print("2. Under-sampling")
+    print("3. Mix")
+    balance = int(input("Choose method to balance data set"))
+    if balance == 1:
+        smote = SMOTE(random_state=42)
+        X_resampled, y_resampled = smote.fit_resample(data, labels)
+    elif balance == 2:
+        undersample = RandomUnderSampler(random_state=42)
+        X_resampled, y_resampled = undersample.fit_resample(data, labels)
+    else:
+        smote_enn = SMOTEENN(random_state=42)
+        X_resampled, y_resampled = smote_enn.fit_resample(data, labels)
 
-    x_train, x_test, y_train, y_test = train_test_split(X_resampled_smote, y_resampled_smote, test_size=0.2)
+    x_train, x_test, y_train, y_test = train_test_split(X_resampled, y_resampled, test_size=0.2)
 
     model = Sequential([
         Dense(data.shape[1], input_shape=(data.shape[1],), use_bias=True, ),
