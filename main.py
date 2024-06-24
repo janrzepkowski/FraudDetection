@@ -13,6 +13,10 @@ from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
+from imblearn.over_sampling import SMOTE
+from imblearn.under_sampling import RandomUnderSampler
+from imblearn.combine import SMOTEENN
+
 
 def convert_year_seconds(time_in_seconds):
     seconds_from_midnight = time_in_seconds % (24 * 60 * 60)
@@ -47,7 +51,10 @@ def main():
     data['TX_WEEK_DAY'] = df['TX_DATETIME'].apply(get_week_day)
     labels = df.get('TX_FRAUD')
 
-    x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.2)
+    smote = SMOTE(random_state=42)
+    X_resampled_smote, y_resampled_smote = smote.fit_resample(data, labels)
+
+    x_train, x_test, y_train, y_test = train_test_split(X_resampled_smote, y_resampled_smote, test_size=0.2)
 
     model = Sequential([
         Dense(data.shape[1], input_shape=(data.shape[1],), use_bias=True, ),
