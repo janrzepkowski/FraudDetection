@@ -68,7 +68,8 @@ def main():
     x_train, x_test, y_train, y_test = train_test_split(X_resampled, y_resampled, test_size=0.2)
 
     model = Sequential([
-        Dense(data.shape[1], input_shape=(data.shape[1],), use_bias=True, ),
+        Dense(64, input_shape=(data.shape[1],), use_bias=True, ),
+        Dense(32, use_bias=True, activation="relu"),
         Dense(16, use_bias=True, activation="relu"),
         Dense(8, use_bias=True, activation="relu"),
         Dense(1, use_bias=True, activation="sigmoid")
