@@ -51,21 +51,21 @@ def main():
     data['TX_WEEK_DAY'] = df['TX_DATETIME'].apply(get_week_day)
     labels = df.get('TX_FRAUD')
 
+    x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.2)
     print("1. Over-sampling")
     print("2. Under-sampling")
     print("3. Mix")
     balance = int(input("Choose method to balance data set"))
     if balance == 1:
         smote = SMOTE(random_state=42)
-        X_resampled, y_resampled = smote.fit_resample(data, labels)
+        X_resampled, y_resampled = smote.fit_resample(x_train, y_train)
     elif balance == 2:
         undersample = RandomUnderSampler(random_state=42)
-        X_resampled, y_resampled = undersample.fit_resample(data, labels)
+        X_resampled, y_resampled = undersample.fit_resample(x_train, y_train)
     else:
         smote_enn = SMOTEENN(random_state=42)
-        X_resampled, y_resampled = smote_enn.fit_resample(data, labels)
+        X_resampled, y_resampled = smote_enn.fit_resample(x_train, y_train)
 
-    x_train, x_test, y_train, y_test = train_test_split(X_resampled, y_resampled, test_size=0.2)
 
     model = Sequential([
         Dense(64, input_shape=(data.shape[1],), use_bias=True, ),
@@ -80,7 +80,7 @@ def main():
     model.summary()
 
     ep = 50
-    history = model.fit(x=x_train, y=y_train, batch_size=1000, epochs=ep, validation_split=0.2)
+    history = model.fit(x=X_resampled, y=y_resampled, batch_size=1000, epochs=ep, validation_split=0.2)
 
     model.evaluate(x_test, y_test)
 
